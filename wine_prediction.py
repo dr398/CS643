@@ -20,15 +20,12 @@ from pyspark.sql.functions import col
 def data_cleaning(df):
     # cleaning header 
     return df.select(*(col(c).cast("double").alias(c.strip("\"")) for c in df.columns))
-
-    
-
 "main function for the application"
 if __name__ == "__main__":
     
     # Creates the  spark application
     spark = SparkSession.builder \
-        .appName('wine_prediction_cs643') \
+        .appName('wine_prediction') \
         .getOrCreate()
 
     # creates the spark context to report logging info
@@ -45,23 +42,12 @@ if __name__ == "__main__":
          output_path = sys.argv[3] + "testmodel.model"
     else:
           input_path = "s3://cs643project2/TrainingDataset.csv"
-          output_path="s3://cs643project2/testmodel.model"
-
-  
-    
+          output_path="s3://cs643project2/testmodel.model"  
     train_data_set = data_cleaning(df)
 
-    df = (spark.read
-          .format("csv")
-          .option('header', 'true')
-          .option("sep", ";")
-          .option("inferschema",'true')
-          .load(valid_path))
-    
+    df = (spark.read.format("csv").option('header', 'true').option("sep", ";").option("inferschema",'true').load(valid_path))
     valid_data_set = data_cleaning(df)
-
-
-
+    
     # removes column not adding much value to prediction
     # removed 'residual sugar','free sulfur dioxide',  'pH',
     required_features = ['fixed acidity','volatile acidity','citric acid','chlorides','total sulfur dioxide','density','sulphates','alcohol',]
@@ -104,10 +90,7 @@ if __name__ == "__main__":
     .addGrid(rf.impurity, ["entropy","gini"])\
     .build()
     pipeline = Pipeline(stages=[assembler, indexer, rf])
-    crossval = CrossValidator(estimator=pipeline,
-                          estimatorParamMaps=paramGrid,
-                        
-  
+    crossval = CrossValidator(estimator=pipeline, estimatorParamMaps=paramGrid,
     cvmodel = crossval.fit(train_data_set)
     
                #saves the best model to new param `model` 
