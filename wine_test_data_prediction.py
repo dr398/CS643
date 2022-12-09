@@ -3,8 +3,6 @@
  # Course : CS643 Fall 2022
  # Student : Dhruval Rana
  
-"Spark application to run tuned model with testfile"
-
 import os
 import sys
 from pyspark.sql import SparkSession
